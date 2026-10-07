@@ -417,7 +417,7 @@ document
 
 
 // =====================================
-// VOICE RECOGNITION
+// FIXA VOICE RECOGNITION
 // =====================================
 
 const SpeechRecognition =
@@ -426,86 +426,99 @@ const SpeechRecognition =
 
 if (!SpeechRecognition) {
 
-    micButton.disabled = false;
-
     micButton.onclick = function () {
 
         response.innerText =
-            "इस Preview में voice recognition उपलब्ध नहीं है। FIXA को Chrome में खोलकर देखें।";
+            "इस browser में voice recognition उपलब्ध नहीं है।";
 
         terminal(
-            "VOICE RECOGNITION NOT SUPPORTED"
+            "VOICE API NOT AVAILABLE"
         );
 
     };
 
 } else {
 
-    const recognition =
-        new SpeechRecognition();
+    const recognition = new SpeechRecognition();
 
     recognition.lang = "hi-IN";
-
     recognition.continuous = false;
-
     recognition.interimResults = false;
-
+    recognition.maxAlternatives = 1;
 
     micButton.onclick = function () {
 
-        try {
+        // Browser permission check
+        if (navigator.mediaDevices &&
+            navigator.mediaDevices.getUserMedia) {
 
-            recognition.start();
+            navigator.mediaDevices.getUserMedia({
+                audio: true
+            })
+            .then(function () {
 
-            micButton.classList.add(
-                "listening"
-            );
+                terminal("MIC PERMISSION OK");
 
-            status.innerText =
-                "LISTENING";
+                try {
 
-            response.innerText =
-                "🎙️ FIXA सुन रहा है...";
+                    recognition.start();
 
-            terminal(
-                "MICROPHONE STARTED"
-            );
+                } catch (error) {
 
-        } catch (error) {
+                    console.log(error);
 
-            console.log(error);
+                }
 
-            response.innerText =
-                "Microphone start नहीं हो पाया।";
+            })
+            .catch(function (error) {
+
+                console.log(error);
+
+                response.innerText =
+                    "Microphone permission नहीं मिली। Chrome की site permission check करें।";
+
+                terminal(
+                    "MIC PERMISSION ERROR: " +
+                    error.name
+                );
+
+            });
+
+        } else {
+
+            try {
+
+                recognition.start();
+
+            } catch (error) {
+
+                console.log(error);
+
+            }
 
         }
 
     };
 
-
     recognition.onstart = function () {
 
-        micButton.classList.add(
-            "listening"
-        );
+        micButton.classList.add("listening");
 
-        status.innerText =
-            "LISTENING";
+        status.innerText = "LISTENING";
 
-        terminal(
-            "LISTENING..."
-        );
+        response.innerText =
+            "🎙️ FIXA सुन रहा है...";
+
+        terminal("LISTENING...");
 
     };
-
 
     recognition.onresult = function (event) {
 
         const text =
             event.results[0][0].transcript;
 
-        commandInput.value =
-            text;
+        commandInput.value = text;
 
         terminal(
             "VOICE: " + text
@@ -519,40 +532,48 @@ if (!SpeechRecognition) {
 
     };
 
-
     recognition.onerror = function (event) {
+
+        console.log(
+            "Speech error:",
+            event.error
+        );
 
         micButton.classList.remove(
             "listening"
         );
 
-        status.innerText =
-            "READY";
+        status.innerText = "READY";
 
         terminal(
-            "MIC ERROR: " + event.error
+            "SPEECH ERROR: " +
+            event.error
         );
 
         if (event.error === "not-allowed") {
 
             response.innerText =
-                "FIXA को microphone permission नहीं मिली।";
+                "Chrome ने FIXA की voice service को अनुमति नहीं दी।";
+
+        } else if (event.error === "service-not-allowed") {
+
+            response.innerText =
+                "इस device/browser में speech service उपलब्ध नहीं है।";
 
         } else if (event.error === "no-speech") {
 
             response.innerText =
-                "मुझे आपकी आवाज़ सुनाई नहीं दी। फिर से बोलिए।";
+                "आवाज़ सुनाई नहीं दी। फिर से बोलिए।";
 
         } else {
 
             response.innerText =
-                "Microphone error: " +
+                "Voice error: " +
                 event.error;
 
         }
 
     };
-
 
     recognition.onend = function () {
 
@@ -560,9 +581,8 @@ if (!SpeechRecognition) {
             "listening"
         );
 
-        status.innerText =
-            "READY";
+        status.innerText = "READY";
 
     };
 
-      }
+}

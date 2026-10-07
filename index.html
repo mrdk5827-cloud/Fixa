@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FIXA AI</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <div class="logo-circle"></div>
+
+                <div>
+                    <h1>FIXA</h1>
+                    <p>PERSONAL AI ASSISTANT</p>
+                </div>
+            </div>
+
+            <div class="online">
+                <span></span>
+                ONLINE
+            </div>
+        </header>
+
+
+        <!-- AI ORB -->
+        <section class="ai-section">
+
+            <div class="orb">
+                <div class="ring ring1"></div>
+                <div class="ring ring2"></div>
+                <div class="ring ring3"></div>
+
+                <div class="core">
+                    <span>F</span>
+                </div>
+            </div>
+
+            <h2 id="status">READY</h2>
+
+            <p class="subtitle">
+                FIXA is waiting for your command
+            </p>
+
+        </section>
+
+
+        <!-- TERMINAL -->
+        <section class="terminal">
+
+            <div class="terminal-head">
+                <div class="lights">
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                </div>
+
+                <span>FIXA://SYSTEM</span>
+            </div>
+
+            <div id="terminalText">
+
+                <p>
+                    <b>></b> SYSTEM INITIALIZED
+                </p>
+
+                <p>
+                    <b>></b> FIXA AI CORE ONLINE
+                </p>
+
+                <p>
+                    <b>></b> VOICE SYSTEM READY
+                </p>
+
+                <p>
+                    <b>></b> WAITING FOR COMMAND...
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- COMMAND -->
+        <section class="command-area">
+
+            <div class="input-box">
+
+                <input
+                    type="text"
+                    id="command"
+                    placeholder="FIXA को command दें..."
+                    autocomplete="off"
+                >
+
+                <button id="mic" title="Voice Command">
+                    🎙️
+                </button>
+
+            </div>
+
+            <button id="send" class="execute">
+                <span>⚡</span>
+                EXECUTE COMMAND
+            </button>
+
+        </section>
+
+
+        <!-- RESPONSE -->
+        <section class="response-box">
+
+            <div class="response-title">
+                <span class="green-dot"></span>
+                FIXA RESPONSE
+            </div>
+
+            <p id="response">
+                नमस्ते! मैं FIXA हूँ।<br>
+                आप मुझे कोई command दे सकते हैं।
+            </p>
+
+        </section>
+
+
+        <!-- QUICK COMMANDS -->
+        <section class="quick">
+
+            <button data-command="मेरे contacts खोलो">
+                CONTACTS
+            </button>
+
+            <button data-command="मुझे बताओ अभी कितने बजे हैं">
+                TIME
+            </button>
+
+            <button data-command="Google खोलो">
+                GOOGLE
+            </button>
+
+        </section>
+
+
+        <footer>
+            FIXA AI • SYSTEM ONLINE
+        </footer>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+          </html>

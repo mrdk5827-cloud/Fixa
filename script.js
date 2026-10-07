@@ -14,6 +14,7 @@ const terminalText = document.getElementById("terminalText");
 // =====================================
 
 function terminal(message) {
+
     const p = document.createElement("p");
 
     p.innerHTML = "<b>></b> " + message;
@@ -26,7 +27,7 @@ function terminal(message) {
 
 
 // =====================================
-// FIXA VOICE
+// FIXA VOICE OUTPUT
 // =====================================
 
 function speak(text) {
@@ -64,10 +65,26 @@ function reply(text) {
 
 
 // =====================================
+// CLEAN PHONE NUMBER
+// =====================================
+
+function cleanNumber(number) {
+
+    return number
+        .replace(/\s+/g, "")
+        .replace(/-/g, "")
+        .replace(/\(/g, "")
+        .replace(/\)/g, "");
+}
+
+
+// =====================================
 // OPEN PHONE DIALER
 // =====================================
 
 function openDialer(number) {
+
+    number = cleanNumber(number);
 
     terminal("OPENING PHONE");
 
@@ -81,6 +98,8 @@ function openDialer(number) {
 // =====================================
 
 function openSMS(number, message) {
+
+    number = cleanNumber(number);
 
     terminal("OPENING SMS");
 
@@ -100,6 +119,26 @@ function openSMS(number, message) {
 
 function openWhatsApp(number, message) {
 
+    number = cleanNumber(number);
+
+    // India number को international format में बदलना
+    if (
+        number.startsWith("0") &&
+        number.length === 11
+    ) {
+        number =
+            "91" +
+            number.substring(1);
+    }
+
+    if (
+        number.length === 10 &&
+        !number.startsWith("91")
+    ) {
+        number =
+            "91" + number;
+    }
+
     terminal("OPENING WHATSAPP");
 
     const url =
@@ -109,6 +148,27 @@ function openWhatsApp(number, message) {
         encodeURIComponent(message);
 
     window.open(url, "_blank");
+}
+
+
+// =====================================
+// OPEN WEBSITE
+// =====================================
+
+function openWebsite(url, name) {
+
+    reply(
+        "हाँ, " + name + " खोल रहा हूँ।"
+    );
+
+    setTimeout(function () {
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+    }, 500);
 }
 
 
@@ -129,7 +189,6 @@ function processCommand(command) {
         return;
     }
 
-
     status.innerText = "PROCESSING";
 
     terminal("COMMAND RECEIVED");
@@ -137,7 +196,6 @@ function processCommand(command) {
     terminal(
         command.toUpperCase()
     );
-
 
     const lower =
         command.toLowerCase();
@@ -153,7 +211,8 @@ function processCommand(command) {
         lower.includes("time")
     ) {
 
-        const now = new Date();
+        const now =
+            new Date();
 
         const time =
             now.toLocaleTimeString(
@@ -175,44 +234,143 @@ function processCommand(command) {
 
 
     // =================================
-    // GOOGLE
+    // DATE
     // =================================
 
     if (
-        lower.includes("google")
+        lower.includes("आज की तारीख") ||
+        lower.includes("तारीख") ||
+        lower.includes("date")
     ) {
 
-        terminal(
-            "OPENING GOOGLE"
-        );
+        const now =
+            new Date();
 
-        reply(
-            "हाँ, Google खोल रहा हूँ।"
-        );
-
-        setTimeout(function () {
-
-            window.open(
-                "https://www.google.com",
-                "_blank"
+        const date =
+            now.toLocaleDateString(
+                "hi-IN",
+                {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                }
             );
 
-        }, 500);
+        reply(
+            "आज " +
+            date +
+            " है।"
+        );
 
         return;
     }
 
 
     // =================================
-    // PHONE NUMBER CALL
+    // GOOGLE
     // =================================
 
     if (
-        lower.startsWith("call ")
+        lower.includes("google") ||
+        lower.includes("गूगल")
     ) {
 
-        const number =
-            command.substring(5).trim();
+        terminal(
+            "OPENING GOOGLE"
+        );
+
+        openWebsite(
+            "https://www.google.com",
+            "Google"
+        );
+
+        return;
+    }
+
+
+    // =================================
+    // YOUTUBE
+    // =================================
+
+    if (
+        lower.includes("youtube") ||
+        lower.includes("यूट्यूब")
+    ) {
+
+        terminal(
+            "OPENING YOUTUBE"
+        );
+
+        openWebsite(
+            "https://www.youtube.com",
+            "YouTube"
+        );
+
+        return;
+    }
+
+
+    // =================================
+    // INSTAGRAM
+    // =================================
+
+    if (
+        lower.includes("instagram") ||
+        lower.includes("इंस्टाग्राम")
+    ) {
+
+        openWebsite(
+            "https://www.instagram.com",
+            "Instagram"
+        );
+
+        return;
+    }
+
+
+    // =================================
+    // FACEBOOK
+    // =================================
+
+    if (
+        lower.includes("facebook") ||
+        lower.includes("फेसबुक")
+    ) {
+
+        openWebsite(
+            "https://www.facebook.com",
+            "Facebook"
+        );
+
+        return;
+    }
+
+
+    // =================================
+    // CALL
+    // =================================
+
+    if (
+        lower.startsWith("call ") ||
+        lower.startsWith("कॉल ")
+    ) {
+
+        let number;
+
+        if (lower.startsWith("call ")) {
+
+            number =
+                command
+                    .substring(5)
+                    .trim();
+
+        } else {
+
+            number =
+                command
+                    .substring(5)
+                    .trim();
+        }
 
         if (number === "") {
 
@@ -239,34 +397,121 @@ function processCommand(command) {
 
     // =================================
     // SMS
+    //
+    // Format:
+    // sms 9876543210 hello
     // =================================
 
     if (
         lower.startsWith("sms ")
     ) {
 
+        const data =
+            command.substring(4).trim();
+
+        const parts =
+            data.split(/\s+/);
+
+        const number =
+            parts.shift();
+
+        const message =
+            parts.join(" ");
+
+        if (
+            !number ||
+            !message
+        ) {
+
+            reply(
+                "इस तरह लिखें: sms 9876543210 hello"
+            );
+
+            return;
+        }
+
         reply(
-            "SMS के लिए अभी number और message को अलग-अलग देना होगा।"
+            "SMS तैयार कर रहा हूँ।"
         );
+
+        setTimeout(function () {
+
+            openSMS(
+                number,
+                message
+            );
+
+        }, 500);
 
         return;
     }
 
 
     // =================================
-    // WHATSAPP
+    // WHATSAPP NUMBER + MESSAGE
+    //
+    // Example:
+    // whatsapp 9876543210 hello
     // =================================
 
     if (
-        lower.includes("whatsapp")
+        lower.startsWith("whatsapp ")
     ) {
 
+        const data =
+            command.substring(9).trim();
+
+        const parts =
+            data.split(/\s+/);
+
+        const number =
+            parts.shift();
+
+        const message =
+            parts.join(" ");
+
+        if (
+            !number ||
+            !message
+        ) {
+
+            reply(
+                "इस तरह लिखें: whatsapp 9876543210 hello"
+            );
+
+            return;
+        }
+
         reply(
-            "WhatsApp action के लिए contact का phone number चाहिए।"
+            "WhatsApp में message तैयार कर रहा हूँ।"
         );
 
-        terminal(
-            "WHATSAPP MODULE READY"
+        setTimeout(function () {
+
+            openWhatsApp(
+                number,
+                message
+            );
+
+        }, 500);
+
+        return;
+    }
+
+
+    // =================================
+    // WHATSAPP OPEN
+    // =================================
+
+    if (
+        lower.includes("whatsapp") ||
+        lower.includes("व्हाट्सऐप") ||
+        lower.includes("व्हाट्सएप")
+    ) {
+
+        openWebsite(
+            "https://web.whatsapp.com/",
+            "WhatsApp"
         );
 
         return;
@@ -302,13 +547,33 @@ function processCommand(command) {
 
     if (
         lower.includes("hello") ||
-        lower.includes("hi") ||
+        lower === "hi" ||
         lower.includes("हेलो") ||
-        lower.includes("नमस्ते")
+        lower.includes("नमस्ते") ||
+        lower.includes("नमस्कार")
     ) {
 
         reply(
             "नमस्ते! मैं FIXA हूँ। बताइए, मैं आपके लिए क्या करूँ?"
+        );
+
+        return;
+    }
+
+
+    // =================================
+    // WHO ARE YOU
+    // =================================
+
+    if (
+        lower.includes("तुम कौन हो") ||
+        lower.includes("तुम कौन") ||
+        lower.includes("who are you") ||
+        lower.includes("what are you")
+    ) {
+
+        reply(
+            "मैं FIXA हूँ, आपका personal AI assistant।"
         );
 
         return;
@@ -321,12 +586,35 @@ function processCommand(command) {
 
     if (
         lower.includes("help") ||
-        lower.includes("मदद")
+        lower.includes("मदद") ||
+        lower.includes("क्या कर सकते हो")
     ) {
 
         reply(
-            "आप मुझे time, Google, call या WhatsApp जैसी commands दे सकते हैं।"
+            "मैं अभी समय बता सकता हूँ, Google, YouTube और दूसरी websites खोल सकता हूँ, phone dialer खोल सकता हूँ और WhatsApp या SMS message तैयार कर सकता हूँ।"
         );
+
+        return;
+    }
+
+
+    // =================================
+    // CLEAR COMMAND
+    // =================================
+
+    if (
+        lower === "clear" ||
+        lower === "clear terminal" ||
+        lower === "क्लियर"
+    ) {
+
+        terminalText.innerHTML = "";
+
+        response.innerText =
+            "Terminal साफ कर दिया गया।";
+
+        status.innerText =
+            "READY";
 
         return;
     }
@@ -345,7 +633,7 @@ function processCommand(command) {
         reply(
             "मैंने आपकी command समझी: \"" +
             command +
-            "\"। इस action के लिए अभी Android module जोड़ना बाकी है।"
+            "\"। इस action को अभी FIXA में जोड़ना बाकी है।"
         );
 
     }, 500);
@@ -356,36 +644,46 @@ function processCommand(command) {
 // SEND BUTTON
 // =====================================
 
-sendButton.addEventListener(
-    "click",
-    function () {
+if (sendButton) {
 
-        processCommand(
-            commandInput.value
-        );
-
-    }
-);
-
-
-// =====================================
-// ENTER KEY
-// =====================================
-
-commandInput.addEventListener(
-    "keydown",
-    function (event) {
-
-        if (event.key === "Enter") {
+    sendButton.addEventListener(
+        "click",
+        function () {
 
             processCommand(
                 commandInput.value
             );
 
         }
+    );
 
-    }
-);
+}
+
+
+// =====================================
+// ENTER KEY
+// =====================================
+
+if (commandInput) {
+
+    commandInput.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                processCommand(
+                    commandInput.value
+                );
+
+            }
+
+        }
+    );
+
+}
 
 
 // =====================================
@@ -424,6 +722,7 @@ const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+
 if (!SpeechRecognition) {
 
     micButton.onclick = function () {
@@ -439,50 +738,65 @@ if (!SpeechRecognition) {
 
 } else {
 
-    const recognition = new SpeechRecognition();
+    const recognition =
+        new SpeechRecognition();
 
-    recognition.lang = "hi-IN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.lang =
+        "hi-IN";
+
+    recognition.continuous =
+        false;
+
+    recognition.interimResults =
+        false;
+
+    recognition.maxAlternatives =
+        1;
+
 
     micButton.onclick = function () {
 
-        // Browser permission check
-        if (navigator.mediaDevices &&
-            navigator.mediaDevices.getUserMedia) {
+        if (
+            navigator.mediaDevices &&
+            navigator.mediaDevices.getUserMedia
+        ) {
 
-            navigator.mediaDevices.getUserMedia({
-                audio: true
-            })
-            .then(function () {
+            navigator.mediaDevices
+                .getUserMedia({
+                    audio: true
+                })
 
-                terminal("MIC PERMISSION OK");
+                .then(function () {
 
-                try {
+                    terminal(
+                        "MIC PERMISSION OK"
+                    );
 
-                    recognition.start();
+                    try {
 
-                } catch (error) {
+                        recognition.start();
+
+                    } catch (error) {
+
+                        console.log(error);
+
+                    }
+
+                })
+
+                .catch(function (error) {
 
                     console.log(error);
 
-                }
+                    response.innerText =
+                        "Microphone permission नहीं मिली। Chrome की site permission check करें।";
 
-            })
-            .catch(function (error) {
+                    terminal(
+                        "MIC PERMISSION ERROR: " +
+                        error.name
+                    );
 
-                console.log(error);
-
-                response.innerText =
-                    "Microphone permission नहीं मिली। Chrome की site permission check करें।";
-
-                terminal(
-                    "MIC PERMISSION ERROR: " +
-                    error.name
-                );
-
-            });
+                });
 
         } else {
 
@@ -500,89 +814,141 @@ if (!SpeechRecognition) {
 
     };
 
-    recognition.onstart = function () {
 
-        micButton.classList.add("listening");
+    recognition.onstart =
+        function () {
 
-        status.innerText = "LISTENING";
+            micButton.classList.add(
+                "listening"
+            );
 
-        response.innerText =
-            "🎙️ FIXA सुन रहा है...";
-
-        terminal("LISTENING...");
-
-    };
-
-    recognition.onresult = function (event) {
-
-        const text =
-            event.results[0][0].transcript;
-
-        commandInput.value = text;
-
-        terminal(
-            "VOICE: " + text
-        );
-
-        micButton.classList.remove(
-            "listening"
-        );
-
-        processCommand(text);
-
-    };
-
-    recognition.onerror = function (event) {
-
-        console.log(
-            "Speech error:",
-            event.error
-        );
-
-        micButton.classList.remove(
-            "listening"
-        );
-
-        status.innerText = "READY";
-
-        terminal(
-            "SPEECH ERROR: " +
-            event.error
-        );
-
-        if (event.error === "not-allowed") {
+            status.innerText =
+                "LISTENING";
 
             response.innerText =
-                "Chrome ने FIXA की voice service को अनुमति नहीं दी।";
+                "🎙️ FIXA सुन रहा है...";
 
-        } else if (event.error === "service-not-allowed") {
+            terminal(
+                "LISTENING..."
+            );
 
-            response.innerText =
-                "इस device/browser में speech service उपलब्ध नहीं है।";
+        };
 
-        } else if (event.error === "no-speech") {
 
-            response.innerText =
-                "आवाज़ सुनाई नहीं दी। फिर से बोलिए।";
+    recognition.onresult =
+        function (event) {
 
-        } else {
+            const text =
+                event
+                    .results[0][0]
+                    .transcript;
 
-            response.innerText =
-                "Voice error: " +
-                event.error;
+            commandInput.value =
+                text;
 
-        }
+            terminal(
+                "VOICE: " + text
+            );
 
-    };
+            micButton.classList.remove(
+                "listening"
+            );
 
-    recognition.onend = function () {
+            processCommand(
+                text
+            );
 
-        micButton.classList.remove(
-            "listening"
-        );
+        };
 
-        status.innerText = "READY";
 
-    };
+    recognition.onerror =
+        function (event) {
+
+            console.log(
+                "Speech error:",
+                event.error
+            );
+
+            micButton.classList.remove(
+                "listening"
+            );
+
+            status.innerText =
+                "READY";
+
+            terminal(
+                "SPEECH ERROR: " +
+                event.error
+            );
+
+
+            if (
+                event.error ===
+                "not-allowed"
+            ) {
+
+                response.innerText =
+                    "Chrome ने FIXA की voice service को अनुमति नहीं दी।";
+
+            }
+
+            else if (
+                event.error ===
+                "service-not-allowed"
+            ) {
+
+                response.innerText =
+                    "इस device/browser में speech service उपलब्ध नहीं है।";
+
+            }
+
+            else if (
+                event.error ===
+                "no-speech"
+            ) {
+
+                response.innerText =
+                    "आवाज़ सुनाई नहीं दी। फिर से बोलिए।";
+
+            }
+
+            else {
+
+                response.innerText =
+                    "Voice error: " +
+                    event.error;
+
+            }
+
+        };
+
+
+    recognition.onend =
+        function () {
+
+            micButton.classList.remove(
+                "listening"
+            );
+
+            status.innerText =
+                "READY";
+
+        };
 
 }
+
+
+// =====================================
+// FIXA READY
+// =====================================
+
+terminal(
+    "FIXA SYSTEM ONLINE"
+);
+
+terminal(
+    "COMMAND MODULE READY"
+);
+
+status.innerText =
+    "READY";
